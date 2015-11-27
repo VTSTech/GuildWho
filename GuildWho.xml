@@ -1,0 +1,13 @@
+<Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
+	<Script file = "GuildWho.lua" />
+	<Frame name="GuildWhoMainFrame">
+		<Scripts>
+			<OnLoad>
+				GUILDWHO_OnLoad();
+			</OnLoad>
+			<OnEvent> 
+				GUILDWHO_OnEvent(event,arg1,arg2);
+			</OnEvent>
+		</Scripts>
+	</Frame>
+</Ui>
