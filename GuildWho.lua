@@ -1,14 +1,22 @@
 GuildWho_Saved = {}
 
 function GUILDWHO_OnLoad()
-    this:RegisterEvent("CHAT_MSG_SYSTEM")
-    --slash commands
-   SlashCmdList["GWHO"] = GUILDWHO_Command;
-    SLASH_GWHO1 = "/guildwho";
-    SLASH_GWHO2 = "/gwho";
+   if IsInGuild() then
+      local guild, realm = (GetGuildInfo("player")), GetRealmName()
+      --if GuildWho_Saved[realm] 
+      --and GuildWho_Saved[realm][guild]
+      this:RegisterEvent("CHAT_MSG_SYSTEM")
+      --slash commands
+      SlashCmdList["GWHO"] = GUILDWHO_Command;
+      SLASH_GWHO1 = "/guildwho";
+      SLASH_GWHO2 = "/gwho";
+      print("GuildWho v0.0.2 loaded!");
+   else
+      print("You are not in a Guild. GuildWho not loaded.");
+   end
 end
 
-function tContains(table, item)
+local function tContains(table, item)
        local index = 1;
        while table[index] do
                if ( item == table[index] ) then
@@ -32,13 +40,14 @@ end
 end
  
 function GUILDWHO_ShowHelp()
-print("GuildWho v0.0.1 usage:");
+print("GuildWho v0.0.2 usage:");
 print("'/guildwho {guild_member}' or '/gwho {guild_member}'");
 print("'/guildwho m {guild_member} mm/dd/yy mm/dd/yy' or '/gwho m {guild_member} mm/dd/yy mm/dd/yy'");
 end
 
 function GUILDWHO_Command(msg)
    local Cmd, SubCmd = GUILDWHO_GetCmd(msg);
+   local guild, realm = (GetGuildInfo("player")), GetRealmName()
    if (Cmd == "")then
       GUILDWHO_ShowHelp();
    elseif (strsub(Cmd,1,2) == "m ")then
@@ -52,14 +61,16 @@ function GUILDWHO_Command(msg)
          elseif (n == 3)then
             JoinDate = token;
          elseif (n == 4)then
-             RankDate = token;
+            RankDate = token;
          end
       end
       print("Player Name: ", PlayerName, "Join Date: ", JoinDate, "Rank Changed: ", RankDate);
-			tinsert(GuildWho_Saved,getn(GuildWho_Saved),PlayerName)             -- character name
-			tinsert(GuildWho_Saved,getn(GuildWho_Saved),JoinDate) -- join date
-			tinsert(GuildWho_Saved,getn(GuildWho_Saved),RankDate) -- rank change date      
+			tinsert(GuildWho_Saved,getn(GuildWho_Saved),PlayerName) -- character name
+			tinsert(GuildWho_Saved,getn(GuildWho_Saved),JoinDate)   -- join date
+			tinsert(GuildWho_Saved,getn(GuildWho_Saved),RankDate)   -- rank change date      
 			print("Data stored. use /rl or logout/quit/camp to commit to disk.");
+   else
+   GUILDWHO_Lookup(Cmd);
    end
 end
 
@@ -84,10 +95,15 @@ function GUILDWHO_Joined()
 	end
 end
 
-function GUILDWHO_Lookup()
-	
+function GUILDWHO_Lookup(PlayerName)
+	--print("GuildWho Debug: Lookup fired!");
+	if (tContains(GuildWho_Saved,PlayerName) == 1) then
+		JDIndex = derp2+1
+		RDIndex = derp2+2
+		print("Guild Member: ", PlayerName, "Joined: ", GuildWho_Saved[JDIndex], "Rank Changed: ", GuildWho_Saved[RDIndex]);
+	end
 end
 
-function GUILDWHO_RankChange()
+function GUILDWHO_RankChange(PlayerName)
 
 end
