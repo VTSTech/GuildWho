@@ -1,6 +1,7 @@
 GuildWho_Saved = {}
 
 function GUILDWHO_OnLoad()
+	 gwhobuild = "v0.0.3";
    if IsInGuild() then
       local guild, realm = (GetGuildInfo("player")), GetRealmName()
       --if GuildWho_Saved[realm] 
@@ -10,7 +11,7 @@ function GUILDWHO_OnLoad()
       SlashCmdList["GWHO"] = GUILDWHO_Command;
       SLASH_GWHO1 = "/guildwho";
       SLASH_GWHO2 = "/gwho";
-      print("GuildWho v0.0.2 loaded!");
+      print("GuildWho", gwhobuild,"loaded!");
    else
       print("You are not in a Guild. GuildWho not loaded.");
    end
@@ -40,7 +41,7 @@ end
 end
  
 function GUILDWHO_ShowHelp()
-print("GuildWho v0.0.2 usage:");
+print("GuildWho", gwhobuild,"usage:");
 print("'/guildwho {guild_member}' or '/gwho {guild_member}'");
 print("'/guildwho m {guild_member} mm/dd/yy mm/dd/yy' or '/gwho m {guild_member} mm/dd/yy mm/dd/yy'");
 end
@@ -64,11 +65,15 @@ function GUILDWHO_Command(msg)
             RankDate = token;
          end
       end
-      print("Player Name: ", PlayerName, "Join Date: ", JoinDate, "Rank Changed: ", RankDate);
+      if (tContains(GuildWho_Saved,PlayerName) == 1) then
+      print("GuildWho", gwhobuild," Player Name:", PlayerName,"is already in the database.");
+      else
+      print("GuildWho", gwhobuild," Player Name:", PlayerName,"Join Date: ", JoinDate, "Rank Changed: ", RankDate);
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),PlayerName) -- character name
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),JoinDate)   -- join date
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),RankDate)   -- rank change date      
-			print("Data stored. use /rl or logout/quit/camp to commit to disk.");
+			print("GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");
+			end
    else
    GUILDWHO_Lookup(Cmd);
    end
@@ -76,13 +81,14 @@ end
 
 function GUILDWHO_OnEvent(event)
     if(event == "CHAT_MSG_SYSTEM") then
-    if(string.find(arg1,"has joined the guild.")) then GUILDWHO_Joined();
-    if(string.find(arg1,"has promoted")) then GUILDWHO_RankChange();
-    if(string.find(arg1,"has demoted")) then GUILDWHO_RankChange();
-    end
-    end
-    end
-    end
+    	if(string.find(arg1,"has joined the guild."))then
+	    	GUILDWHO_Joined();
+	    elseif(string.find(arg1,"has promoted"))then
+	    	GUILDWHO_RankChange();
+	    elseif(string.find(arg1,"has demoted"))then
+	    	GUILDWHO_RankChange();
+			end
+		end
 end
 
 function GUILDWHO_Joined()
@@ -96,14 +102,54 @@ function GUILDWHO_Joined()
 end
 
 function GUILDWHO_Lookup(PlayerName)
-	--print("GuildWho Debug: Lookup fired!");
+	--print("GuildWho", gwhobuild,"Debug: Lookup fired!");
 	if (tContains(GuildWho_Saved,PlayerName) == 1) then
 		JDIndex = derp2+1
 		RDIndex = derp2+2
-		print("Guild Member: ", PlayerName, "Joined: ", GuildWho_Saved[JDIndex], "Rank Changed: ", GuildWho_Saved[RDIndex]);
+		print("GuildWho", gwhobuild," Guild Member: ", PlayerName, "Joined: ", GuildWho_Saved[JDIndex], "Rank Changed: ", GuildWho_Saved[RDIndex]);
+	else
+		print("GuildWho", gwhobuild," ", PlayerName, " is not in the database.");
 	end
 end
 
-function GUILDWHO_RankChange(PlayerName)
-
+function GUILDWHO_RankChange()
+		-- arg1="Datmage has promoted Rodd to Senior Member.";
+	if(string.find(arg1," has promoted ")) then
+   --print (string.find(arg1,"has promoted"));
+   --local sp,ep;
+   sp,ep = (string.find(arg1," has promoted "));
+   if(string.find(arg1," to ")) then
+      -- print(string.find(arg1," to "));
+      --local st,et;
+      st,et = (string.find(arg1," to "));
+      print("String Length:",strlen(arg1));
+      --local gPlayerName;
+      gPlayerName = strsub(arg1,sp+14,st-1);
+   end
+end
+		-- arg1="Datmage has demoted Rodd to Senior Member.";
+	if(string.find(arg1," has demoted ")) then
+   --print (string.find(arg1,"has demoted"));
+   --local sp,ep;
+   sp,ep = (string.find(arg1," has demoted "));
+   if(string.find(arg1," to ")) then
+      -- print(string.find(arg1," to "));
+      --local st,et;
+      st,et = (string.find(arg1," to "));
+      print("String Length:",strlen(arg1));
+      --local gPlayerName;
+      gPlayerName = strsub(arg1,sp+13,st-1);
+   end
+end
+		
+	if (tContains(GuildWho_Saved,gPlayerName) == 1) then
+		JDIndex = derp2+1
+		RDIndex = derp2+2
+		tinsert(GuildWho_Saved,RDIndex,date("%m/%d/%y"))
+	else
+		print("GuildWho", gwhobuild,": ", gPlayerName, " is not in the database. Adding new entry");
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),gPlayerName)             -- character name
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),date("%m/%d/%y")) -- join date
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),date("%m/%d/%y")) -- rank change date		
+	end
 end
