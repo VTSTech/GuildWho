@@ -93,7 +93,7 @@ end
 
 function GUILDWHO_Joined()
    if(string.find(arg1,"has joined the guild.")) then
-		print(strsub(arg1,1,strlen(arg1)-22),date("%m/%d/%y"),date("%m/%d/%y"));
+		--print(strsub(arg1,1,strlen(arg1)-22),date("%m/%d/%y"),date("%m/%d/%y"));
 		derp = (strsub(arg1,1,strlen(arg1)-22));
 		tinsert(GuildWho_Saved,getn(GuildWho_Saved),derp)             -- character name
 		tinsert(GuildWho_Saved,getn(GuildWho_Saved),date("%m/%d/%y")) -- join date
@@ -122,7 +122,7 @@ function GUILDWHO_RankChange()
       -- print(string.find(arg1," to "));
       --local st,et;
       st,et = (string.find(arg1," to "));
-      print("String Length:",strlen(arg1));
+      --print("String Length:",strlen(arg1));
       --local gPlayerName;
       gPlayerName = strsub(arg1,sp+14,st-1);
    end
@@ -136,7 +136,7 @@ end
       -- print(string.find(arg1," to "));
       --local st,et;
       st,et = (string.find(arg1," to "));
-      print("String Length:",strlen(arg1));
+      --print("String Length:",strlen(arg1));
       --local gPlayerName;
       gPlayerName = strsub(arg1,sp+13,st-1);
    end
