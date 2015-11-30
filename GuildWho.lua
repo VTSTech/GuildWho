@@ -208,7 +208,10 @@ function GUILDWHO_Lookup(PlayerName)
 	if (tContains(GuildWho_Saved,PlayerName) == 1) then
 		JDIndex = localindex + 1
 		RDIndex = localindex + 2
-		print("|cffffcc00GuildWho", gwhobuild," Guild Member: ", PlayerName, "Joined: ", GuildWho_Saved[JDIndex], "Rank Changed: ", GuildWho_Saved[RDIndex]);
+		print("|cffffcc00GuildWho", gwhobuild);
+		print("|cffffcc00Guild Member: ", PlayerName);
+		print("|cffffcc00Joined:              ", GuildWho_Saved[JDIndex]);
+		print("|cffffcc00Rank Changed: ", GuildWho_Saved[RDIndex]);
 	else
 		print("|cffffcc00GuildWho", gwhobuild," ", PlayerName, " is not in the database.");
 	end
