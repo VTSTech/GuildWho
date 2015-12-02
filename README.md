@@ -1,11 +1,11 @@
 ## GuildWho
 Title: GuildWho
 
-Notes: Keeps track of Guild Join Date and Rank Change date.
+Notes: Keeps track of Guild Join Date, Rank Change Date, Kick Date and who Kicked.
 
 Author: Veritas83 (GitHub) aka DatMage (Warmane)
 
-Version: 0.0.4
+Version: 0.0.5
 
 Usage:
 
@@ -15,4 +15,4 @@ Usage:
 
 /gwho Nick - Performs Lookup on saved data.
 
-<img src="http://i.imgur.com/4Dh0DTc.jpg">
+<img src="http://i.imgur.com/ZXFcNZH.jpg">
