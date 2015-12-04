@@ -3,7 +3,7 @@ GuildWho_Stats = {}
 GuildWho_Kicked = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.0.6";
+  gwhobuild = "v0.0.7";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -99,6 +99,10 @@ function GUILDWHO_Command(msg)
       gsPlayerName = strsub(Cmd,7,strlen(Cmd))
       --print("|cffffcc00'stats trigger!", gsPlayerName);
       GUILDWHO_CheckStats(gsPlayerName)
+   elseif (strsub(Cmd,1,7) == "statsp ")then
+      gsPlayerName = strsub(Cmd,8,strlen(Cmd))
+      print("|cffffcc00'statsp trigger!", gsPlayerName);
+      GUILDWHO_CheckStatsP(gsPlayerName)
    else
    GUILDWHO_Lookup(Cmd);
    end
@@ -233,6 +237,7 @@ end
 
 function GUILDWHO_Lookup(PlayerName)
 	--print("GuildWho", gwhobuild,"Debug: Lookup fired!");
+	local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	msglocal = true
 	if (tContains(GuildWho_Saved,PlayerName) == 1) then
 		JDIndex = localindex + 1
@@ -245,19 +250,16 @@ function GUILDWHO_Lookup(PlayerName)
 		print("|cffffcc00GuildWho", gwhobuild," ", PlayerName, " is not in the database.");
 	end
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
-	if (tContains(GuildWho_Kicked,PlayerName) == 1) then
+	if (GuildWho_Kicked[realm][guild][PlayerName]) then
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = ", GuildWho_Kicked[localindex - 1])
-   if (string.find(GuildWho_Kicked[localindex - 1],"/"))then
-   	local d=d; -- do something that is not nothing, but has no purpose :)
-   else
-   	print("|cffff0000Kicked by", GuildWho_Kicked[localindex + 2],"on",GuildWho_Kicked[localindex + 1]);
-	 end
+   	print("|cffff0000Kicked by", GuildWho_Kicked[realm][guild][PlayerName]["Kicked By"]["value"],"on",GuildWho_Kicked[realm][guild][PlayerName]["Kick Date"]["value"]);
 	end
 	msglocal = false
 end
 
 function GUILDWHO_RankChange()
-	msgsys = true
+  local guild, realm = (GetGuildInfo("player")), GetRealmName()
+	msgsys = true		
 	-- arg1="Datmage has promoted Rodd to Senior Member.";
 	if(string.find(arg1," has promoted ")) then
    sp,ep = string.find(arg1," has promoted ");
@@ -280,11 +282,31 @@ function GUILDWHO_RankChange()
 	   local sp,ep = string.find(arg1," has been kicked out of the guild by ");
 	   gPlayerName = strsub(arg1,1,sp - 1)
 	   gKickedBy   = strsub(strsub(arg1,ep,strlen(arg1)),2,strlen(strsub(arg1,ep,strlen(arg1)))-1)
-		 if (tContains(GuildWho_Kicked,gPlayerName) ~= 1) then
+			if (GuildWho_Kicked[realm] == nil) then
+			GuildWho_Kicked[realm] = {}
+			end
+			if (GuildWho_Kicked[realm][guild] == nil) then
+			GuildWho_Kicked[realm][guild] = {}
+			end
+			if(GuildWho_Kicked[realm][guild][gPlayerName] == nil) then
+			GuildWho_Kicked[realm][guild][gPlayerName] = {}
+			end
+			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"] == nil) then
+			GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"] = {}
+			end
+			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"] == nil) then
+			GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"] = {}
+			end
+			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"]["value"] == nil) then
+			GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"]["value"] = {}
+			end
+			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"]["value"] == nil) then
+			GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"]["value"] = {}
+			end	
+		 if (GuildWho_Kicked[realm][guild][gPlayerName]) then
 			 print("|cffffcc00GuildWho", gwhobuild,": ", gPlayerName, " is not in the GuildWho_Kicked database. Adding new entry");
-			 tinsert(GuildWho_Kicked,getn(GuildWho_Kicked),gPlayerName)             -- character name
-			 tinsert(GuildWho_Kicked,getn(GuildWho_Kicked),date("%m/%d/%y")) -- kick date
-			 tinsert(GuildWho_Kicked,getn(GuildWho_Kicked),gKickedBy) -- Kicked by
+			 GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"]["value"] = date("%m/%d/%y")
+			 GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"]["value"] = gKickedBy
 			 print("|cffffcc00GuildWho", gwhobuild,": ", gPlayerName, " added to the GuildWho_Kicked database!");
 		 end
 	end
@@ -332,4 +354,35 @@ function GUILDWHO_CheckStats(gsPlayerName)
 	 end
 	end
 	msglocal = false
+end
+
+function GUILDWHO_CheckStatsP(gsPlayerName)
+   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+   --print("GuildWho", gwhobuild,"Debug: Lookup fired!");
+   msglocal = true
+   gmsg = ""
+   if(GuildWho_Stats[realm][guild][gsPlayerName] == nil) then
+      print("|cffffcc00GuildWho", gwhobuild," ", gsPlayerName,"is not in the GuildWho_Stats Database.");
+      gmsg = "GuildWho " .. gwhobuild .. " Guild Member: " .. gsPlayerName
+   else        
+      gmsg = "GuildWho " .. gwhobuild .. " Guild Member: " .. gsPlayerName
+      if(type(GuildWho_Stats[realm][guild][gsPlayerName]["Chat Lines"]["value"]) == "table") then
+         gmsg = gmsg .." Chat Lines: 0 "
+      else
+         gmsg = gmsg .. " Chat Lines: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Chat Lines"]["value"]
+      end
+      if(type(GuildWho_Stats[realm][guild][gsPlayerName]["Achievements"]["value"]) == "table") then
+         gmsg = gmsg .. " Achievements: 0 "
+      else
+         gmsg = gmsg .." Achievements: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Achievements"]["value"]
+      end
+   end
+   --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
+   if (GuildWho_Kicked[realm][guild][gsPlayerName]) then
+      --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = " .. GuildWho_Kicked[localindex - 1])
+         gmsg = gmsg .. " Kicked by " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kicked By"]["value"] .. " on " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Date"]["value"]
+   end
+   --print("|cffffcc00GuildWho", gwhobuild,"Debug:",gmsg)
+   SendChatMessage(gmsg,"guild")
+   msglocal = false
 end
