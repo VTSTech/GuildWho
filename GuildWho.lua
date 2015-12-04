@@ -61,9 +61,11 @@ end
 
 function GUILDWHO_ShowHelp()
 print("|cffffcc00GuildWho", gwhobuild,"usage:");
+print("|cffffcc00Local Output:");
 print("|cffffcc00'/guildwho {guild_member}' or '/gwho {guild_member}'");
-print("|cffffcc00'/guildwho stats' or '/gwho stats'");
 print("|cffffcc00'/guildwho stats {guild_member}' or '/gwho stats {guild_member}'");
+print("|cffffcc00Guild Chat Output:");
+print("|cffffcc00'/guildwho statsp {guild_member}' or '/gwho statsp {guild_member}'");
 print("|cffffcc00Manual Database submission:");
 print("|cffffcc00'/guildwho m {guild_member} mm/dd/yy mm/dd/yy' or '/gwho m {guild_member} mm/dd/yy mm/dd/yy'");
 end
