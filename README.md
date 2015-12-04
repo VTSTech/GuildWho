@@ -20,4 +20,4 @@ Usage:
 /gwho m Nick 11/22/14 11/22/15 - Manual add, First date is Join, Second is Rank (JoinDate again for new members)
 
 
-<img src="http://i.imgur.com/ZXFcNZH.jpg">
+<img src="http://i.imgur.com/kDViuP2.jpg">
