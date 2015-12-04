@@ -1691,10 +1691,178 @@ GuildWho_Saved = {
 	"DatHunter", -- [1689]
 	"11/14/15", -- [1690]
 	"11/14/15", -- [1691]
-	"Vengeanse", -- [1692]
+	"Quinrah", -- [1692]
+	"12/03/15", -- [1693]
+	"12/03/15", -- [1694]
+	"Thorwon", -- [1695]
+	"12/03/15", -- [1696]
+	"12/03/15", -- [1697]
+	"Yrni", -- [1698]
+	"12/03/15", -- [1699]
+	"12/03/15", -- [1700]
+	"Vengeanse", -- [1701]
 	[0] = "11/14/15",
 }
 GuildWho_Stats = {
+	["Lordaeron"] = {
+		["Playing for Free"] = {
+			["Sagozart"] = {
+				["Chat Lines"] = {
+					["value"] = {
+					},
+				},
+				["Achievements"] = {
+					["value"] = 2,
+				},
+			},
+			["Marfulion"] = {
+				["Chat Lines"] = {
+					["value"] = 3,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Aronax"] = {
+				["Chat Lines"] = {
+					["value"] = 1,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Prz"] = {
+				["Chat Lines"] = {
+					["value"] = 5,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Zonos"] = {
+				["Chat Lines"] = {
+					["value"] = {
+					},
+				},
+				["Achievements"] = {
+					["value"] = 1,
+				},
+			},
+			["Thorwon"] = {
+				["Chat Lines"] = {
+					["value"] = 9,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Tanam"] = {
+				["Chat Lines"] = {
+					["value"] = {
+					},
+				},
+				["Achievements"] = {
+					["value"] = 2,
+				},
+			},
+			["Toosmexy"] = {
+				["Chat Lines"] = {
+					["value"] = {
+					},
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Coto"] = {
+				["Chat Lines"] = {
+					["value"] = 1,
+				},
+				["Achievements"] = {
+					["value"] = 1,
+				},
+			},
+			["Korenai"] = {
+				["Chat Lines"] = {
+					["value"] = 2,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Satie"] = {
+				["Chat Lines"] = {
+					["value"] = 2,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Zenaud"] = {
+				["Chat Lines"] = {
+					["value"] = 2,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Noxid"] = {
+				["Chat Lines"] = {
+					["value"] = 14,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Dedick"] = {
+				["Chat Lines"] = {
+					["value"] = 4,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Valorian"] = {
+				["Chat Lines"] = {
+					["value"] = 1,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Dathunter"] = {
+				["Chat Lines"] = {
+					["value"] = 15,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+			["Mikeread"] = {
+			},
+			["Smashotron"] = {
+				["Chat Lines"] = {
+					["value"] = 3,
+				},
+				["Achievements"] = {
+					["value"] = {
+					},
+				},
+			},
+		},
+	},
 }
 GuildWho_Kicked = {
 	"Proteius", -- [1]
