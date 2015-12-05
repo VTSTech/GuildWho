@@ -27,4 +27,4 @@ Manual Database submission (These are detected and added automatically while the
 
 /gwho addkick Nick 11/22/15 KickedBy - Manual kick submit
 
-/gwho addkickr Nick KickeReason - Manual kick reason submit
+/gwho addkickr Nick KickReason - Manual kick reason submit, Should be done for all kicks.
