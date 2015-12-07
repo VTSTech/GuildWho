@@ -3,7 +3,7 @@ GuildWho_Stats = {}
 GuildWho_Kicked = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.0.8";
+  gwhobuild = "v0.0.9";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -230,6 +230,20 @@ function GUILDWHO_OnEvent(event)
     if(event == "CHAT_MSG_GUILD") then
 		  local guild, realm = (GetGuildInfo("player")), GetRealmName()
     	msgguild = true
+			--public cmd, testing v0.0.9
+			if (strsub(arg1,1,13) == ".gwho statsg ") then
+				local guild, realm = (GetGuildInfo("player")), GetRealmName()
+				msglocal = true
+				msgguild = false
+				local psPlayerName = strsub(arg1,14,strlen(arg1))
+				print("public cmd trigger! Target: ", psPlayerName);
+				if(GuildWho_Stats[realm][guild][psPlayerName] == nil)then
+					SendChatMessage(psPlayerName .. " has not been a Guild Member.","guild")
+				else
+				GUILDWHO_CheckStatsG(psPlayerName);
+				msglocal = false
+				end
+			end
 			if (GuildWho_Stats[realm] == nil) then
 			GuildWho_Stats[realm] = {}
 			end
