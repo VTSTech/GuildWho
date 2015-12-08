@@ -1,9 +1,11 @@
 ﻿GuildWho_Saved = {}
 GuildWho_Stats = {}
 GuildWho_Kicked = {}
+GuildWho_Alts = {}
+GuildWho_Settings = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.0.9";
+  gwhobuild = "v0.1.0";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -66,19 +68,22 @@ print("|cffffcc00GuildWho", gwhobuild,"usage:");
 print("|cffffcc00Local Output:");
 print("|cffffcc00'/guildwho {guild_member}' or '/gwho {guild_member}'");
 print("|cffffcc00'/guildwho stats {guild_member}' or '/gwho stats {guild_member}'");
+print("|cffffcc00'/guildwho alts {guild_member}' or '/gwho alts {guild_member}'");
 print("|cffffcc00Guild Chat Output:");
 print("|cffffcc00'/guildwho statsg {guild_member}' or '/gwho statsg {guild_member}'");
 print("|cffffcc00Manual Database submission:");
 print("|cffffcc00'/guildwho addjoin {guild_member} mm/dd/yy mm/dd/yy' or '/gwho addjoin {guild_member} mm/dd/yy mm/dd/yy'");
 print("|cffffcc00'/guildwho addkick {guild_member} mm/dd/yy KickedBy' or '/gwho addkick {guild_member} mm/dd/yy KickedBy'");
 print("|cffffcc00'/guildwho addkickr {guild_member} KickReason' or '/gwho addkick {guild_member} KickReason'");
+print("|cffffcc00Settings:");
+print("|cffffcc00'/gwho guildcmd' - Guild Chat .gwho command trigger on/off (Default: Off)");
 end
 
 function GUILDWHO_Command(msg)
    local Cmd, SubCmd = GUILDWHO_GetCmd(msg);
    if (Cmd == "")then
       GUILDWHO_ShowHelp();
-   elseif (strsub(Cmd,1,8) == "addjoin ")then
+   elseif (strsub(Cmd,1,8) == "addjoin ")then	
       --print("|cffffcc00'addjoin trigger!");
       local n=0;
       for token in string.gmatch(Cmd, "[^%s]+") do
@@ -204,8 +209,25 @@ function GUILDWHO_Command(msg)
       GUILDWHO_CheckStats(gsPlayerName)
    elseif (strsub(Cmd,1,7) == "statsg ")then
       gsPlayerName = strsub(Cmd,8,strlen(Cmd))
+      gsPlayerName = strupper(strsub(gsPlayerName,1,1)) .. strsub(gsPlayerName,2,strlen(gsPlayerName))
       --print("|cffffcc00'statsg trigger!", gsPlayerName);
       GUILDWHO_CheckStatsG(gsPlayerName)
+   elseif (strsub(Cmd,1,8) == "guildcmd")then
+   		if (GuildWho_Settings == nil) then
+			GuildWho_Settings = {}
+			end
+   		if (GuildWho_Settings["gtriggers"] == nil) then
+			GuildWho_Settings["gtriggers"] = "Off"
+			--print("guildcmd off, not exist");
+			end
+   		if (GuildWho_Settings["gtriggers"] == "Off") then
+			GuildWho_Settings["gtriggers"] = "On"
+							print("|cffffcc00GuildWho guildcmd on, toggle");
+   		elseif (GuildWho_Settings["gtriggers"] == "On") then
+			GuildWho_Settings["gtriggers"] = "Off"
+							print("|cffffcc00GuildWho guildcmd off, toggle");
+			end
+
    else
    GUILDWHO_Lookup(Cmd);
    end
@@ -231,17 +253,26 @@ function GUILDWHO_OnEvent(event)
 		  local guild, realm = (GetGuildInfo("player")), GetRealmName()
     	msgguild = true
 			--public cmd, testing v0.0.9
-			if (strsub(arg1,1,13) == ".gwho statsg ") then
-				local guild, realm = (GetGuildInfo("player")), GetRealmName()
-				msglocal = true
-				msgguild = false
-				local psPlayerName = strsub(arg1,14,strlen(arg1))
-				print("public cmd trigger! Target: ", psPlayerName);
-				if(GuildWho_Stats[realm][guild][psPlayerName] == nil)then
-					SendChatMessage(psPlayerName .. " has not been a Guild Member.","guild")
-				else
-				GUILDWHO_CheckStatsG(psPlayerName);
-				msglocal = false
+			if (strsub(arg1,1,6) == ".gwho ") then
+	   		if (GuildWho_Settings == nil) then
+				GuildWho_Settings = {}
+				end
+	   		if (GuildWho_Settings["gtriggers"] == nil) then
+				GuildWho_Settings["gtriggers"] = "Off"
+				end
+	   		if (GuildWho_Settings["gtriggers"] == "On") then
+					local guild, realm = (GetGuildInfo("player")), GetRealmName()
+					msglocal = true
+					msgguild = false
+					local psPlayerName = strsub(arg1,7,strlen(arg1))
+					psPlayerName = strupper(strsub(psPlayerName,1,1)) .. strsub(psPlayerName,2,strlen(psPlayerName))
+					print("public cmd trigger! Target: ", psPlayerName);
+					if(GuildWho_Stats[realm][guild][psPlayerName] == nil)then
+						SendChatMessage(psPlayerName .. " has not been a Guild Member.","guild")
+					else
+					GUILDWHO_CheckStatsG(psPlayerName);
+					msglocal = false
+					end
 				end
 			end
 			if (GuildWho_Stats[realm] == nil) then
@@ -265,9 +296,7 @@ function GUILDWHO_OnEvent(event)
 			if(GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"] == nil) then
 			GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"] = {}
 			end
-    	--print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Msg)", arg2, arg1);
       if (GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"]) then
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Msg, Database Found): Player Name:", arg2, GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"]);
 	      local gchatlines = GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"];
 				if (gchatlines == nil or type(gchatlines) == "table") then
 					--print("gchatlines is nil or table")
@@ -275,16 +304,10 @@ function GUILDWHO_OnEvent(event)
 				end
 	      local gchatlines = gchatlines + 1
 				GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"] = gchatlines
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Msg, just after gchatline increment)", arg2,GuildWho_Stats[realm][guild][arg2],"Chat Lines:",GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"]);
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: Guild Member: ", arg2, "Chat lines: ", GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"], "Achievements seen: ", GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"]);
       else
 	      GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"] = 0
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Msg, Not Found):", arg2, GuildWho_Stats[realm][guild][arg2]);
 				GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"] = 1 -- New entry, 1 chat lines
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Msg, New chat entry. Line 1):", arg2,GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"]);
 				GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"] = 0 -- New entry, 0 achievements
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Msg, New chat entry. Achievement stub, 0)::", arg2,GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"]);
-				--print("|cffffcc00GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");    	
     	end
     	msgguild = false
     end
@@ -323,15 +346,10 @@ function GUILDWHO_OnEvent(event)
 	      end
 	      local gachievements = gachievements + 1
 				GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = gachievements
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Ach, just after gchatline increment)", arg2,GuildWho_Stats[realm][guild][gPlayerName],"Chat Lines:",GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"]);
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: Guild Member: ", gPlayerName, "Chat lines: ", GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"], "Achievements seen: ", GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]);
       else
 	      GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = 0
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Msg, Not Found):", gPlayerName, GuildWho_Stats[realm][guild][gPlayerName]);
 				GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] = 0 -- New entry, 0 chat lines
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Ach, New Achievement. 0 Chat Lines):", arg2,GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"]);
 				GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = 1 -- New entry, 1 achievements
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Ach, New Achievement, 1):", arg2,GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]);
     	end
     msgguildach = false
     end
@@ -365,7 +383,6 @@ function GUILDWHO_OnEvent(event)
 			GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = {}
 			end    
       if (GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]) then
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Ach, Database Found): Player Name:", arg2, GuildWho_Stats[realm][guild][arg2]);      
 	      local gachievements = GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]
 	      if (gachievements == nil or type(gachievements) == "table") then
 	      	--print("gachievements is definately nil or a table")
@@ -373,15 +390,10 @@ function GUILDWHO_OnEvent(event)
 	      end
 	      local gachievements = gachievements + 1
 				GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = gachievements
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Ach, just after gchatline increment)", arg2,GuildWho_Stats[realm][guild][gPlayerName],"Chat Lines:",GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"]);
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: Guild Member: ", gPlayerName, "Chat lines: ", GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"], "Achievements seen: ", GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]);
       else
 	      GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = 0
-	      --print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Msg, Not Found):", gPlayerName, GuildWho_Stats[realm][guild][gPlayerName]);
 				GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] = 0 -- New entry, 0 chat lines
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Ach, New Achievement. 0 Chat Lines):", arg2,GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"]);
 				GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = 1 -- New entry, 1 achievements
-				--print("|cffffcc00GuildWho", gwhobuild,"Debug (Guild Ach, New Achievement, 1):", arg2,GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]);
     	end
     msglocal = false
   end
@@ -406,6 +418,7 @@ function GUILDWHO_Lookup(PlayerName)
 	--print("GuildWho", gwhobuild,"Debug: Lookup fired!");
 	local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	msglocal = true
+	PlayerName = strupper(strsub(PlayerName,1,1)) .. strsub(PlayerName,2,strlen(PlayerName))
 	if (tContains(GuildWho_Saved,PlayerName) == 1) then
 		JDIndex = localindex + 1
 		RDIndex = localindex + 2
@@ -439,7 +452,6 @@ end
 function GUILDWHO_RankChange()
   local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	msgsys = true		
-	-- arg1="Datmage has promoted Rodd to Senior Member.";
 	if(string.find(arg1," has promoted ")) then
    sp,ep = string.find(arg1," has promoted ");
    if(string.find(arg1," to ")) then
@@ -456,7 +468,6 @@ function GUILDWHO_RankChange()
    end
 	end
 
-	--arg1="Proteius has been kicked out of the guild by Datmage.";
 	if(string.find(arg1," has been kicked out of the guild by "))then
 	   local sp,ep = string.find(arg1," has been kicked out of the guild by ");
 	   gPlayerName = strsub(arg1,1,sp - 1)
@@ -513,6 +524,7 @@ function GUILDWHO_CheckStats(gsPlayerName)
 	local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	--print("GuildWho", gwhobuild,"Debug: Lookup fired!");
 	msglocal = true
+	gsPlayerName = strupper(strsub(gsPlayerName,1,1)) .. strsub(gsPlayerName,2,strlen(gsPlayerName))
 	if(GuildWho_Stats[realm][guild][gsPlayerName] == nil) then
 		print("|cffffcc00GuildWho", gwhobuild," ", gsPlayerName,"is not in the GuildWho_Stats Database.");
 	else		
@@ -546,6 +558,7 @@ function GUILDWHO_CheckStatsG(gsPlayerName)
    --print("GuildWho", gwhobuild,"Debug: Lookup fired!");
    msglocal = true
    gmsg = ""
+   gsPlayerName = strupper(strsub(gsPlayerName,1,1)) .. strsub(gsPlayerName,2,strlen(gsPlayerName))
    if(GuildWho_Stats[realm][guild][gsPlayerName] == nil) then
       print("|cffffcc00GuildWho", gwhobuild," ", gsPlayerName,"is not in the GuildWho_Stats Database.");
       gmsg = "GuildWho " .. gwhobuild .. " Guild Member: " .. gsPlayerName
