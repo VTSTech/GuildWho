@@ -33,7 +33,7 @@ Settings
 
 /gwho showkickr - shows the currently set kick reason
 
-Manual Database submission (These are detected and added automatically while the Addon is loaded, except KickReason)
+Manual Database submission (These are detected and added automatically while the Addon is loaded)
 
 /gwho addjoin Nick 11/22/15 11/22/15 - Manual join submit
 
