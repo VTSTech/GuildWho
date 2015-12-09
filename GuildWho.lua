@@ -5,7 +5,7 @@ GuildWho_Alts = {}
 GuildWho_Settings = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.1.0";
+  gwhobuild = "v0.1.1";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -20,6 +20,9 @@ function GUILDWHO_OnLoad()
 	--arg11    Chat lineID 
 	--arg12    Sender GUID 			
 	this:RegisterEvent("ACHIEVEMENT_EARNED")
+	--achievementID The unit that was affected. (string) 
+	this:RegisterEvent("UNIT_LEVEL")
+	--unitID  The unit that was affected. (string) 
 	--slash commands
 	SlashCmdList["GWHO"] = GUILDWHO_Command;
 	SLASH_GWHO1 = "/guildwho";
@@ -71,12 +74,16 @@ print("|cffffcc00'/guildwho stats {guild_member}' or '/gwho stats {guild_member}
 print("|cffffcc00'/guildwho alts {guild_member}' or '/gwho alts {guild_member}'");
 print("|cffffcc00Guild Chat Output:");
 print("|cffffcc00'/guildwho statsg {guild_member}' or '/gwho statsg {guild_member}'");
+print("|cffffcc00'/guildwho showver' or '/gwho statsg shover'");
 print("|cffffcc00Manual Database submission:");
 print("|cffffcc00'/guildwho addjoin {guild_member} mm/dd/yy mm/dd/yy' or '/gwho addjoin {guild_member} mm/dd/yy mm/dd/yy'");
 print("|cffffcc00'/guildwho addkick {guild_member} mm/dd/yy KickedBy' or '/gwho addkick {guild_member} mm/dd/yy KickedBy'");
 print("|cffffcc00'/guildwho addkickr {guild_member} KickReason' or '/gwho addkick {guild_member} KickReason'");
 print("|cffffcc00Settings:");
 print("|cffffcc00'/gwho guildcmd' - Guild Chat .gwho command trigger on/off (Default: Off)");
+print("|cffffcc00'/gwho usekickr' - Toggle use of the default Kick Reason");
+print("|cffffcc00'/gwho setkickr' - Set the default Kick Reason");
+print("|cffffcc00'/gwho showkickr'- Display the currently set Kick Reason");
 end
 
 function GUILDWHO_Command(msg)
@@ -227,7 +234,40 @@ function GUILDWHO_Command(msg)
 			GuildWho_Settings["gtriggers"] = "Off"
 							print("|cffffcc00GuildWho guildcmd off, toggle");
 			end
-
+   elseif (strsub(Cmd,1,9) == "setkickr ")then
+   		if (GuildWho_Settings == nil) then
+			GuildWho_Settings = {}
+			end
+   		if (GuildWho_Settings["defkickr"] == nil) then
+			GuildWho_Settings["defkickr"] = ""
+			end
+			GuildWho_Settings["defkickr"] = strsub(Cmd,10,strlen(Cmd))
+   		print("|cffffcc00GuildWho Default Kick Reason:", GuildWho_Settings["defkickr"]);
+   elseif (strsub(Cmd,1,9) == "showkickr")then
+   		if (GuildWho_Settings == nil) then
+			GuildWho_Settings = {}
+			end
+   		if (GuildWho_Settings["defkickr"] == nil) then
+			GuildWho_Settings["defkickr"] = ""
+			end
+   		print("|cffffcc00GuildWho Default Kick Reason:", GuildWho_Settings["defkickr"]);
+   elseif (strsub(Cmd,1,8) == "usekickr")then
+   		if (GuildWho_Settings == nil) then
+			GuildWho_Settings = {}
+			end
+   		if (GuildWho_Settings["usekickr"] == nil) then
+			GuildWho_Settings["usekickr"] = "Off"
+			end
+   		if (GuildWho_Settings["usekickr"] == "Off") then
+			GuildWho_Settings["usekickr"] = "On"
+							print("|cffffcc00GuildWho usekickr on, toggle");
+   		elseif (GuildWho_Settings["usekickr"] == "On") then
+			GuildWho_Settings["usekickr"] = "Off"
+							print("|cffffcc00GuildWho usekickr off, toggle");
+			end
+   		print("|cffffcc00GuildWho Default Kick Reason:", GuildWho_Settings["defkickr"]);
+   elseif (strsub(Cmd,1,7) == "showver")then
+   		SendChatMessage("GuildWho " .. gwhobuild .. " GitHub: https://github.com/Veritas83/GuildWho","guild")
    else
    GUILDWHO_Lookup(Cmd);
    end
@@ -266,8 +306,8 @@ function GUILDWHO_OnEvent(event)
 					msgguild = false
 					local psPlayerName = strsub(arg1,7,strlen(arg1))
 					psPlayerName = strupper(strsub(psPlayerName,1,1)) .. strsub(psPlayerName,2,strlen(psPlayerName))
-					print("public cmd trigger! Target: ", psPlayerName);
-					if(GuildWho_Stats[realm][guild][psPlayerName] == nil)then
+					--print("public cmd trigger! Target: ", psPlayerName);
+					if (tContains(GuildWho_Saved,gsPlayerName) == 1 and (GuildWho_Stats[realm][guild][psPlayerName] == nil)) then
 						SendChatMessage(psPlayerName .. " has not been a Guild Member.","guild")
 					else
 					GUILDWHO_CheckStatsG(psPlayerName);
@@ -397,6 +437,9 @@ function GUILDWHO_OnEvent(event)
     	end
     msglocal = false
   end
+  if(event == "UNIT_LEVEL") then
+    print("UNIT_LEVEL event fired! Target:", arg1)
+  end
 end
 
 function GUILDWHO_Joined()
@@ -493,12 +536,23 @@ function GUILDWHO_RankChange()
 			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"]["value"] == nil) then
 			GuildWho_Kicked[realm][guild][gPlayerName]["Kicked By"]["value"] = {}
 			end
-			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"] == nil) then
+   		if (GuildWho_Settings == nil) then
+			GuildWho_Settings = {}
+			end
+   		if (GuildWho_Settings["usekickr"] == nil) then
+			GuildWho_Settings["usekickr"] = "Off"			
+			end
+   		if(GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"] == nil) then
       GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"] = {}
     	end
 			if(GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"]["value"] == nil) then
       GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"]["value"] = {}
-    	end			
+    	end	   		
+    	
+   		if (GuildWho_Settings["usekickr"] == "On") then    	
+   			GuildWho_Kicked[realm][guild][gPlayerName]["Kick Reason"]["value"] = GuildWho_Settings["defkickr"]
+   		end
+   		
 		 if (GuildWho_Kicked[realm][guild][gPlayerName]) then
 			 print("|cffffcc00GuildWho", gwhobuild,": ", gPlayerName, " is not in the GuildWho_Kicked database. Adding new entry");
 			 GuildWho_Kicked[realm][guild][gPlayerName]["Kick Date"]["value"] = date("%m/%d/%y")
