@@ -1,11 +1,11 @@
 ## GuildWho
 Title: GuildWho
 
-Notes: Keeps track of a variety of information about Guild Members. Guild Join Date, Rank Change Date, Kick Date,Who Kicked. Total Chat Lines and Achievements.
+Notes: Keeps track of a variety of information about Guild Members. Guild Join Date, Join Level, Rank Change Date, Kick Date,Who Kicked. Total Chat Lines and Achievements.
 
 Author: Veritas83 (GitHub) aka DatMage (Warmane)
 
-Version: 0.1.1
+Version: 0.1.2
 
 Usage:
 
@@ -36,6 +36,8 @@ Settings
 Manual Database submission (These are detected and added automatically while the Addon is loaded)
 
 /gwho addjoin Nick 11/22/15 11/22/15 - Manual join submit
+
+/gwho addjoinl Nick 69 - Manual join level submit
 
 /gwho addkick Nick 11/22/15 KickedBy - Manual kick submit
 

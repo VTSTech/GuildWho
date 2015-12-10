@@ -5,7 +5,7 @@ GuildWho_Alts = {}
 GuildWho_Settings = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.1.1";
+  gwhobuild = "v0.1.2";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -71,12 +71,13 @@ print("|cffffcc00GuildWho", gwhobuild,"usage:");
 print("|cffffcc00Local Output:");
 print("|cffffcc00'/guildwho {guild_member}' or '/gwho {guild_member}'");
 print("|cffffcc00'/guildwho stats {guild_member}' or '/gwho stats {guild_member}'");
-print("|cffffcc00'/guildwho alts {guild_member}' or '/gwho alts {guild_member}'");
+--print("|cffffcc00'/guildwho alts {guild_member}' or '/gwho alts {guild_member}'");
 print("|cffffcc00Guild Chat Output:");
 print("|cffffcc00'/guildwho statsg {guild_member}' or '/gwho statsg {guild_member}'");
 print("|cffffcc00'/guildwho showver' or '/gwho statsg shover'");
 print("|cffffcc00Manual Database submission:");
 print("|cffffcc00'/guildwho addjoin {guild_member} mm/dd/yy mm/dd/yy' or '/gwho addjoin {guild_member} mm/dd/yy mm/dd/yy'");
+print("|cffffcc00'/guildwho addjoinl {guild_member} {level}' or '/gwho addjoinl {guild_member} {level}'");
 print("|cffffcc00'/guildwho addkick {guild_member} mm/dd/yy KickedBy' or '/gwho addkick {guild_member} mm/dd/yy KickedBy'");
 print("|cffffcc00'/guildwho addkickr {guild_member} KickReason' or '/gwho addkick {guild_member} KickReason'");
 print("|cffffcc00Settings:");
@@ -113,6 +114,41 @@ function GUILDWHO_Command(msg)
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),RankDate)   -- rank change date      
 			print("|cffffcc00GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");
 			end
+  elseif (strsub(Cmd,1,9) == "addjoinl ")then
+      --print("|cffffcc00'addjoinl trigger!");
+      local guild, realm = (GetGuildInfo("player")), GetRealmName()
+      local n=0;
+      for token in string.gmatch(Cmd, "[^%s]+") do
+         -- print(token)
+         n=n + 1;
+         if (n == 2)then
+            PlayerName = token;
+         elseif (n == 3)then
+            JoinLevel = token;
+         end
+      end
+			if (GuildWho_Stats[realm] == nil) then
+			GuildWho_Stats[realm] = {}
+			end
+			if (GuildWho_Stats[realm][guild] == nil) then
+			GuildWho_Stats[realm][guild] = {}
+			end
+			if(GuildWho_Stats[realm][guild][PlayerName] == nil) then
+			GuildWho_Stats[realm][guild][PlayerName] = {}
+			end
+			if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"] == nil) then
+			GuildWho_Stats[realm][guild][PlayerName]["Join Level"] = {}
+			end
+			if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil) then
+			GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = {}
+			end
+      if (GuildWho_Stats[realm][guild][PlayerName]) then
+      print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"Join Level: ", JoinLevel);
+			GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = JoinLevel
+			print("|cffffcc00GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");
+      else
+      print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"is not in the database.");
+			end			
 	--testing v0.0.8
   elseif (strsub(Cmd,1,8) == "addkick ")then
       --print("|cffffcc00'addkick trigger!");
@@ -305,7 +341,7 @@ function GUILDWHO_OnEvent(event)
 					msglocal = true
 					msgguild = false
 					local psPlayerName = strsub(arg1,7,strlen(arg1))
-					psPlayerName = strupper(strsub(psPlayerName,1,1)) .. strsub(psPlayerName,2,strlen(psPlayerName))
+					psPlayerName = strupper(strsub(psPlayerName,1,1)) .. strlower(strsub(psPlayerName,2,strlen(psPlayerName)))
 					--print("public cmd trigger! Target: ", psPlayerName);
 					if (tContains(GuildWho_Saved,gsPlayerName) == 1 and (GuildWho_Stats[realm][guild][psPlayerName] == nil)) then
 						SendChatMessage(psPlayerName .. " has not been a Guild Member.","guild")
@@ -315,27 +351,7 @@ function GUILDWHO_OnEvent(event)
 					end
 				end
 			end
-			if (GuildWho_Stats[realm] == nil) then
-			GuildWho_Stats[realm] = {}
-			end
-			if (GuildWho_Stats[realm][guild] == nil) then
-			GuildWho_Stats[realm][guild] = {}
-			end
-			if(GuildWho_Stats[realm][guild][arg2] == nil) then
-			GuildWho_Stats[realm][guild][arg2] = {}
-			end
-			if(GuildWho_Stats[realm][guild][arg2]["Chat Lines"] == nil) then
-			GuildWho_Stats[realm][guild][arg2]["Chat Lines"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][arg2]["Achievements"] == nil) then
-			GuildWho_Stats[realm][guild][arg2]["Achievements"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"] == nil) then
-			GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"] == nil) then
-			GuildWho_Stats[realm][guild][arg2]["Achievements"]["value"] = {}
-			end
+			GUILDWHO_InitTables(arg2)
       if (GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"]) then
 	      local gchatlines = GuildWho_Stats[realm][guild][arg2]["Chat Lines"]["value"];
 				if (gchatlines == nil or type(gchatlines) == "table") then
@@ -355,27 +371,7 @@ function GUILDWHO_OnEvent(event)
     	msgguildach = true
 			local gPlayerName = arg2
 		  local guild, realm = (GetGuildInfo("player")), GetRealmName()
-			if (GuildWho_Stats[realm] == nil) then
-			GuildWho_Stats[realm] = {}
-			end
-			if (GuildWho_Stats[realm][guild] == nil) then
-			GuildWho_Stats[realm][guild] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Achievements"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Achievements"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] == nil)then
-			GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = {}
-			end
+			GUILDWHO_InitTables(gPlayerName)
     	--print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Ach)", arg2, gPlayerName);
       if (GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]) then
 	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: (Guild Ach, Database Found): Player Name:", arg2, GuildWho_Stats[realm][guild][arg2]);      
@@ -401,27 +397,7 @@ function GUILDWHO_OnEvent(event)
     	currPlayer = UnitName("player")
 			local gPlayerName = currPlayer
 		  local guild, realm = (GetGuildInfo("player")), GetRealmName()
-			if (GuildWho_Stats[realm] == nil) then
-			GuildWho_Stats[realm] = {}
-			end
-			if (GuildWho_Stats[realm][guild] == nil) then
-			GuildWho_Stats[realm][guild] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Achievements"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Achievements"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] == nil) then
-			GuildWho_Stats[realm][guild][gPlayerName]["Chat Lines"]["value"] = {}
-			end
-			if(GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] == nil)then
-			GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"] = {}
-			end    
+			GUILDWHO_InitTables(gPlayerName)    
       if (GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]) then
 	      local gachievements = GuildWho_Stats[realm][guild][gPlayerName]["Achievements"]["value"]
 	      if (gachievements == nil or type(gachievements) == "table") then
@@ -438,7 +414,7 @@ function GUILDWHO_OnEvent(event)
     msglocal = false
   end
   if(event == "UNIT_LEVEL") then
-    print("UNIT_LEVEL event fired! Target:", arg1)
+    --print("UNIT_LEVEL event fired! Target:", arg1)
   end
 end
 
@@ -449,12 +425,108 @@ function GUILDWHO_Joined()
 		if (tContains(GuildWho_Saved,derp) == 1) then
 			print("|cffffcc00GuildWho", gwhobuild," ", derp, " is already in the database.")
 		else
+		GUILDWHO_InitTables(derp)
+		GuildRoster()
+		GetNumGuildMembers()
+		GetNumGuildMembers(true)
 		local JIndex = table.getn(GuildWho_Saved)
 		tinsert(GuildWho_Saved,JIndex,derp)             -- character name
 		tinsert(GuildWho_Saved,JIndex + 1,date("%m/%d/%y")) -- join date
-		tinsert(GuildWho_Saved,JIndex + 2,date("%m/%d/%y")) -- rank change date
+		tinsert(GuildWho_Saved,JIndex + 2,date("%m/%d/%y")) -- rank change date		
 		end
+		local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		if (GetGuildRosterShowOffline() == 1)then
+		   SetGuildRosterShowOffline(nil)
+		end
+		--print("DEBUG (join):" .. derp)
+		temp = GUILDWHO_JoinL(derp)
 	end
+end
+
+function GUILDWHO_JoinL(PlayerName)
+temp = GuildRoster()
+temp = GetNumGuildMembers()
+temp = GetNumGuildMembers(true)
+for gwn = 1,GetNumGuildMembers(true) do
+	 local guild, realm = (GetGuildInfo("player")), GetRealmName()
+   local gwnPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(gwn)  
+   if (PlayerName == gwnPlayer)then
+      --print("Found at: " .. gwn .. " ".. gwnPlayer .. " " .. playerlevel, GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"])
+      GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+   end
+end
+end
+
+function GUILDWHO_InitTables(PlayerName)
+temp = GuildRoster()
+local guild, realm = (GetGuildInfo("player")), GetRealmName()
+--print("DEBUG: (init tables)" .. PlayerName)
+	if (GuildWho_Stats[realm] == nil) then
+	GuildWho_Stats[realm] = {}
+	end
+	if (GuildWho_Stats[realm][guild] == nil) then
+	GuildWho_Stats[realm][guild] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Chat Lines"] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName]["Chat Lines"] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Achievements"] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName]["Achievements"] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName]["Join Level"] = {}
+		temp = GuildRoster()
+		temp = GetNumGuildMembers()
+		temp = GetNumGuildMembers(true)
+		for gwn = 1,GetNumGuildMembers(true) do
+			 local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local gwnPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(gwn)  
+		   if (PlayerName == gwnPlayer)then
+		      --print("Found at: " .. gwn .. " ".. gwnPlayer .. " " .. playerlevel, GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"])
+		      GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+		   end
+		end	
+	end
+  if (GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil) then
+		temp = GuildRoster()
+		temp = GetNumGuildMembers()
+		temp = GetNumGuildMembers(true)
+		for gwn = 1,GetNumGuildMembers(true) do
+			 local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local gwnPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(gwn)  
+		   if (PlayerName == gwnPlayer)then
+		      --print("Found at: " .. gwn .. " ".. gwnPlayer .. " " .. playerlevel, GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"])
+		      GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+		   end
+		end
+     GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+  end
+  if (type(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"]) == "table") then
+		temp = GuildRoster()
+		temp = GetNumGuildMembers()
+		temp = GetNumGuildMembers(true)
+		for gwn = 1,GetNumGuildMembers(true) do
+			 local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local gwnPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(gwn)  
+		   if (PlayerName == gwnPlayer)then
+		      --print("Found at: " .. gwn .. " ".. gwnPlayer .. " " .. playerlevel, GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"])
+		      GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+		   end
+		end
+     GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+  end	
+	if(GuildWho_Stats[realm][guild][PlayerName]["Chat Lines"]["value"] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName]["Chat Lines"]["value"] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Achievements"]["value"] == nil)then
+	GuildWho_Stats[realm][guild][PlayerName]["Achievements"]["value"] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil) then
+	GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = {}
+	end			
 end
 
 function GUILDWHO_Lookup(PlayerName)
@@ -472,6 +544,27 @@ function GUILDWHO_Lookup(PlayerName)
 	else
 		print("|cffffcc00GuildWho", gwhobuild," ", PlayerName, " is not in the GuildWho_Saved database.");
 	end
+	if(GuildWho_Stats[realm][guild][PlayerName] == nil)then
+		GuildWho_Stats[realm][guild][PlayerName] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"] == nil)then
+		GuildWho_Stats[realm][guild][PlayerName]["Join Level"] = {}
+	end
+	if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil)then
+		GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = {}
+	else
+		print("|cffffcc00Join Level: ",GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"])
+	end
+	--Testing v0.1.2
+	for n = 0,GetNumGuildMembers(true) do
+	   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+	   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
+	   if (currPlayer == PlayerName)then
+	      GUILDWHO_InitTables(PlayerName)
+	      --print("Found at: " .. n .. " ".. PlayerName .. " " ..playerlevel)
+	      print("|cffffcc00Rank: " .. rank)
+	   end
+	end	
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
 	if (GuildWho_Kicked[realm][guild][PlayerName]) then
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = ", GuildWho_Kicked[localindex - 1])
@@ -575,6 +668,9 @@ function GUILDWHO_RankChange()
 end
 
 function GUILDWHO_CheckStats(gsPlayerName)
+	temp = GuildRoster()
+	temp = GetNumGuildMembers()
+	temp = GetNumGuildMembers(true)
 	local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	--print("GuildWho", gwhobuild,"Debug: Lookup fired!");
 	msglocal = true
@@ -584,6 +680,7 @@ function GUILDWHO_CheckStats(gsPlayerName)
 	else		
 		print("|cffffcc00GuildWho", gwhobuild);
 		print("|cffffcc00Guild Member:  ", gsPlayerName);
+		GUILDWHO_InitTables(gsPlayerName)
 		if(type(GuildWho_Stats[realm][guild][gsPlayerName]["Chat Lines"]["value"]) == "table") then
 			print("|cffffcc00Chat Lines:              0");
 		else
@@ -593,8 +690,32 @@ function GUILDWHO_CheckStats(gsPlayerName)
 		print("|cffffcc00Achievements: 0");
 		else
 		print("|cffffcc00Achievements: ", GuildWho_Stats[realm][guild][gsPlayerName]["Achievements"]["value"]);
-		end
+		end	
 	end
+		--Testing v0.1.2
+		for n = 0,GetNumGuildMembers(true) do
+		   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
+		   if (currPlayer == gsPlayerName)then
+		      GUILDWHO_InitTables(gsPlayerName)
+		      --print("Found at: " .. n .. " ".. gsPlayerName .. " " ..playerlevel)
+		      if (GuildWho_Stats[realm][guild][gsPlayerName] == nil) then
+		         GuildWho_Stats[realm][guild][gsPlayerName] = {}
+		      end
+		      if (GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"] == nil) then
+		         GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"] = {}
+		      end
+		      if (GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] == nil) then
+		         GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		      if (type(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]) == "table") then
+		         GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		      if (tonumber(playerlevel) > tonumber(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]))then
+		         print("|cffffcc00Levels Gained: " .. (tonumber(playerlevel) - tonumber(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"])))
+		      end
+		   end
+		end
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
 	if (tContains(GuildWho_Kicked,gsPlayerName) == 1) then
 	--print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = ", GuildWho_Kicked[localindex - 1])
@@ -629,6 +750,34 @@ function GUILDWHO_CheckStatsG(gsPlayerName)
          gmsg = gmsg .." Achievements: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Achievements"]["value"]
       end
    end
+		--Testing v0.1.2
+		for n = 1,GetNumGuildMembers() do
+		   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
+		   if (currPlayer == gsPlayerName)then
+		      --print("Found at: " .. n .. " ".. gsPlayerName .. " " ..playerlevel)
+		      if (GuildWho_Stats[realm][guild][gsPlayerName] == nil) then
+		         GuildWho_Stats[realm][guild][gsPlayerName] = {}
+		      end
+		      if (GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] == nil) then
+		         GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		      if (type(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]) == "table") then
+		         GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		      if (tonumber(playerlevel) > tonumber(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]))then
+		         gmsg = gmsg .. " Levels Gained: " .. (tonumber(playerlevel) - tonumber(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]))
+		      end
+		   gmsg = gmsg .. " Rank: " .. rank
+		   end
+end    
+--print(gmsg)	
+	temp = GUILDWHO_InitTables(gsPlayerName)
+	if(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"])then
+		if (type(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]) ~= "table")then
+			gmsg = gmsg .. " Join Level: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]
+		end
+	end   
 		if (tContains(GuildWho_Saved,gsPlayerName) == 1) then
 			JDIndex = localindex + 1
 			RDIndex = localindex + 2
