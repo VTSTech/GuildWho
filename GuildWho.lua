@@ -5,7 +5,7 @@ GuildWho_Alts = {}
 GuildWho_Settings = {}
 
 function GUILDWHO_OnLoad()
-  gwhobuild = "v0.1.2";
+  gwhobuild = "v0.1.3";
   this:RegisterEvent("CHAT_MSG_SYSTEM")
 	--arg1    The content of the chat message.
   this:RegisterEvent("CHAT_MSG_GUILD")
@@ -255,6 +255,13 @@ function GUILDWHO_Command(msg)
       gsPlayerName = strupper(strsub(gsPlayerName,1,1)) .. strsub(gsPlayerName,2,strlen(gsPlayerName))
       --print("|cffffcc00'statsg trigger!", gsPlayerName);
       GUILDWHO_CheckStatsG(gsPlayerName)
+   elseif (strsub(Cmd,1,7) == "statsp ")then
+      gsPlayerName = strsub(Cmd,8,strlen(Cmd))
+      gsPlayerName = strupper(strsub(gsPlayerName,1,1)) .. strsub(gsPlayerName,2,strlen(gsPlayerName))
+      --print("|cffffcc00'statsg trigger!", gsPlayerName);
+      statsp = true
+      GUILDWHO_CheckStatsG(gsPlayerName)
+      statsp = false
    elseif (strsub(Cmd,1,8) == "guildcmd")then
    		if (GuildWho_Settings == nil) then
 			GuildWho_Settings = {}
@@ -440,6 +447,8 @@ function GUILDWHO_Joined()
 		end
 		--print("DEBUG (join):" .. derp)
 		temp = GUILDWHO_JoinL(derp)
+		temp = GUILDWHO_Lookup(derp)
+		temp = GUILDWHO_CheckStats(derp)
 	end
 end
 
@@ -795,6 +804,13 @@ end
        	 end
    end
    --print("|cffffcc00GuildWho", gwhobuild,"Debug:",gmsg)
-   SendChatMessage(gmsg,"guild")
-   msglocal = false
+   if (statsp == true) then
+   	gmsg = gmsg .. " Guild: <" .. guild .."> "
+   	SendChatMessage(gmsg,"party")
+   	msglocal = false
+   	statsp = false
+   else
+   	SendChatMessage(gmsg,"guild")
+   	msglocal = false
+   end
 end
