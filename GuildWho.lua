@@ -93,6 +93,7 @@ function GUILDWHO_Command(msg)
       GUILDWHO_ShowHelp();
    elseif (strsub(Cmd,1,8) == "addjoin ")then	
       --print("|cffffcc00'addjoin trigger!");
+      msglocal = true
       local n=0;
       for token in string.gmatch(Cmd, "[^%s]+") do
          -- print(token)
@@ -107,6 +108,9 @@ function GUILDWHO_Command(msg)
       end
       if (tContains(GuildWho_Saved,PlayerName) == 1) then
       print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"is already in the database.");
+      print("|cffffcc00GuildWho", gwhobuild," Local Index: ", localindex);
+      tinsert(GuildWho_Saved,localindex+1,JoinDate)   -- join date
+			tinsert(GuildWho_Saved,localindex+2,RankDate)   -- rank change date      
       else
       print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"Join Date: ", JoinDate, "Rank Changed: ", RankDate);
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),PlayerName) -- character name
@@ -114,6 +118,7 @@ function GUILDWHO_Command(msg)
 			tinsert(GuildWho_Saved,getn(GuildWho_Saved),RankDate)   -- rank change date      
 			print("|cffffcc00GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");
 			end
+			msglocal = false
   elseif (strsub(Cmd,1,9) == "addjoinl ")then
       --print("|cffffcc00'addjoinl trigger!");
       local guild, realm = (GetGuildInfo("player")), GetRealmName()
@@ -432,10 +437,10 @@ function GUILDWHO_Joined()
 		if (tContains(GuildWho_Saved,derp) == 1) then
 			print("|cffffcc00GuildWho", gwhobuild," ", derp, " is already in the database.")
 		else
-		GUILDWHO_InitTables(derp)
-		GuildRoster()
-		GetNumGuildMembers()
-		GetNumGuildMembers(true)
+		temp = GUILDWHO_InitTables(derp)
+		temp = GuildRoster()
+		temp = GetNumGuildMembers()
+		temp = GetNumGuildMembers(true)
 		local JIndex = table.getn(GuildWho_Saved)
 		tinsert(GuildWho_Saved,JIndex,derp)             -- character name
 		tinsert(GuildWho_Saved,JIndex + 1,date("%m/%d/%y")) -- join date
@@ -535,7 +540,33 @@ local guild, realm = (GetGuildInfo("player")), GetRealmName()
 	end
 	if(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil) then
 	GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = {}
-	end			
+	end
+		--Testing v0.1.3
+		for n = 1,GetNumGuildMembers() do
+		   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+		   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
+		   if (currPlayer == PlayerName)then
+		      --print("Found at: " .. n .. " ".. PlayerName .. " " ..playerlevel)
+		      if (GuildWho_Stats[realm][guild][PlayerName] == nil) then
+		         GuildWho_Stats[realm][guild][PlayerName] = {}
+		      end
+		      if (GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] == nil) then
+		         GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		      if (type(GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"]) == "table") then
+		         GuildWho_Stats[realm][guild][PlayerName]["Join Level"]["value"] = playerlevel
+		      end
+		   end
+		end
+    if (tContains(GuildWho_Saved,PlayerName) == 1) then
+    --print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"is already in the database.");
+    else
+    print("|cffffcc00GuildWho", gwhobuild," Player Name:", PlayerName,"Join Date: ", JoinDate, "Rank Changed: ", RankDate);
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),PlayerName) -- character name
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),date("%m/%d/%y"))   -- join date
+		tinsert(GuildWho_Saved,getn(GuildWho_Saved),date("%m/%d/%y"))   -- rank change date      
+		print("|cffffcc00GuildWho", gwhobuild,"Data stored. use /rl or logout/quit/camp to commit to disk.");
+		end		   				
 end
 
 function GUILDWHO_Lookup(PlayerName)
@@ -702,7 +733,7 @@ function GUILDWHO_CheckStats(gsPlayerName)
 		end	
 	end
 		--Testing v0.1.2
-		for n = 0,GetNumGuildMembers(true) do
+		for n = 1,GetNumGuildMembers(true) do
 		   local guild, realm = (GetGuildInfo("player")), GetRealmName()
 		   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
 		   if (currPlayer == gsPlayerName)then
@@ -779,7 +810,7 @@ function GUILDWHO_CheckStatsG(gsPlayerName)
 		      end
 		   gmsg = gmsg .. " Rank: " .. rank
 		   end
-end    
+		end    
 --print(gmsg)	
 	temp = GUILDWHO_InitTables(gsPlayerName)
 	if(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"])then
