@@ -340,7 +340,6 @@ function GUILDWHO_OnEvent(event)
     if(event == "CHAT_MSG_GUILD") then
 		  local guild, realm = (GetGuildInfo("player")), GetRealmName()
     	msgguild = true
-			--public cmd, testing v0.0.9
 			if (strsub(arg1,1,6) == ".gwho ") then
 	   		if (GuildWho_Settings == nil) then
 				GuildWho_Settings = {}
@@ -575,6 +574,7 @@ function GUILDWHO_Lookup(PlayerName)
 	msglocal = true
 	PlayerName = strupper(strsub(PlayerName,1,1)) .. strsub(PlayerName,2,strlen(PlayerName))
 	if (tContains(GuildWho_Saved,PlayerName) == 1) then
+		msglocal = true
 		JDIndex = localindex + 1
 		RDIndex = localindex + 2
 		print("|cffffcc00GuildWho", gwhobuild);
@@ -812,28 +812,34 @@ function GUILDWHO_CheckStatsG(gsPlayerName)
 		   end
 		end    
 --print(gmsg)	
-	temp = GUILDWHO_InitTables(gsPlayerName)
-	if(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"])then
-		if (type(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]) ~= "table")then
-			gmsg = gmsg .. " Join Level: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]
-		end
-	end   
-		if (tContains(GuildWho_Saved,gsPlayerName) == 1) then
-			JDIndex = localindex + 1
-			RDIndex = localindex + 2
-			gmsg = gmsg .. " Join Date: " .. GuildWho_Saved[JDIndex] .. " Rank Changed: " .. GuildWho_Saved[RDIndex]
-		else
-			print("|cffffcc00GuildWho", gwhobuild," ", PlayerName, " is not in the GuildWho_Saved database.");
-		end
-   --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
-   if (GuildWho_Kicked[realm][guild][gsPlayerName]) then
-      --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = " .. GuildWho_Kicked[localindex - 1])
-         if (GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Reason"]["value"])then
-         	gmsg = gmsg .. " Kicked by " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kicked By"]["value"] .. " on " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Date"]["value"] .. " Kick Reason: " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Reason"]["value"]
-         else
-         	gmsg = gmsg .. " Kicked by " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kicked By"]["value"] .. " on " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Date"]["value"]
-       	 end
+	--temp = GUILDWHO_InitTables(gsPlayerName)
+	if(GuildWho_Stats[realm][guild][gsPlayerName])then
+		if(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"])then
+			if (type(GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]) ~= "table")then
+				gmsg = gmsg .. " Join Level: " .. GuildWho_Stats[realm][guild][gsPlayerName]["Join Level"]["value"]
+			end
+		end   
+			if (tContains(GuildWho_Saved,gsPlayerName) == 1) then
+				JDIndex = localindex + 1
+				RDIndex = localindex + 2
+				gmsg = gmsg .. " Join Date: " .. GuildWho_Saved[JDIndex] .. " Rank Changed: " .. GuildWho_Saved[RDIndex]
+			else
+				print("|cffffcc00GuildWho", gwhobuild," ", PlayerName, " is not in the GuildWho_Saved database.");
+			end
+	   --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked checking...");
+	   if (GuildWho_Kicked[realm][guild][gsPlayerName]) then
+	      --print("|cffffcc00GuildWho", gwhobuild,"Debug: GuildWho_Kicked[index-1] = " .. GuildWho_Kicked[localindex - 1])
+	         if (GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Reason"]["value"])then
+	         	gmsg = gmsg .. " Kicked by " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kicked By"]["value"] .. " on " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Date"]["value"] .. " Kick Reason: " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Reason"]["value"]
+		   			SendChatMessage(gmsg,"guild")
+		   			msglocal = false         	
+	         else
+	         	gmsg = gmsg .. " Kicked by " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kicked By"]["value"] .. " on " .. GuildWho_Kicked[realm][guild][gsPlayerName]["Kick Date"]["value"]
+		   			SendChatMessage(gmsg,"guild")
+		   			msglocal = false         	
+	       	 end
    end
+	end   
    --print("|cffffcc00GuildWho", gwhobuild,"Debug:",gmsg)
    if (statsp == true) then
    	gmsg = gmsg .. " Guild: <" .. guild .."> "
@@ -841,7 +847,14 @@ function GUILDWHO_CheckStatsG(gsPlayerName)
    	msglocal = false
    	statsp = false
    else
-   	SendChatMessage(gmsg,"guild")
-   	msglocal = false
+   		 for n = 1,GetNumGuildMembers(true) do
+			   local guild, realm = (GetGuildInfo("player")), GetRealmName()
+			   local currPlayer,rank,rankindex,playerlevel,playerclass = GetGuildRosterInfo(n)
+			   if (currPlayer == gsPlayerName)then
+	   			SendChatMessage(gmsg,"guild")
+	   			msglocal = false
+	   		 end
+   		 end
+   msglocal = false
    end
 end
